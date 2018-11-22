@@ -38,13 +38,15 @@ function emitLose(socket) {
   emitEnd(socket.broadcast, "win")
 }
 
-function emitPlay(socket, num) {
-  socket.emit("play", num)
+function emitPlay(socket, data) {
+  socket.emit("play", data)
 }
 
 function emitEnd(socket, status){
   socket.emit("end", {status})
+  console.log(game)
   resetGame()
+  removeListeners([socket, socket.broadcast])
 }
 
 function emitBusy(socket){
@@ -55,7 +57,7 @@ function startGame(socket){
   console.log("ready to play")
   game.playing = true
   game.num = genRandomNum()
-  emitPlay(socket, game.num)
+  emitPlay(socket, {num: game.num})
 }
 
 function onPlayed(socket, action){
@@ -63,14 +65,24 @@ function onPlayed(socket, action){
     emitLose(socket)
     return
   }
-
+  const prevNum = game.num
   game.num = getNextNum(game.num)
   game.num === 1 
     ? emitWin(socket)
-    : emitPlay(socket.broadcast, game.num)
+    : emitPlay(socket.broadcast, { 
+      num: game.num,
+      prevNum, 
+      action
+    })
 }
 
-function userDisconnected(){
+function removeListeners(sockets){
+  sockets.map(socket=>{ 
+    socket.removeAllListeners(["played"]) 
+  })
+}
+
+function userDisconnected(socket){
   emitEnd(io, 'user disconnected')
   resetGame()
 }
@@ -85,7 +97,7 @@ function addPlayer(socket) {
   game.players++
   socket.on("played", action=>onPlayed(socket, action))
   game.players === 2 && startGame(socket)
-  socket.on('disconnect', userDisconnected)
+  socket.once('disconnect', ()=>userDisconnected(socket))
 }
 
 io.on('connection', socket => {
