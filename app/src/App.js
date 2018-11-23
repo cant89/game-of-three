@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import openSocket from 'socket.io-client';
+import Button from './components/Button'
+import MovesList from './components/MovesList'
+import Footer from './components/Footer'
+
 const socket = openSocket('http://localhost:3001');
-
 class App extends Component {
-
   constructor(props) {
     super(props)
     this.state = {
@@ -38,63 +40,50 @@ class App extends Component {
     this.setState(newState)
   }
 
+  getNextNum = (num)=>{
+    return Math.round(num / 3)
+  }
+
   onPlay = (move) => {
     console.log("onPlay")
     const { moves } = this.state
     this.setState({
-      moves: [...moves, move],
+      moves: [...moves, { ...move, mine: false}],
       gameState: "playing"
     })
   }
 
   handlePlay = (action) => {
     console.log("handlePlay")
+    const { moves } = this.state
+    const prevNum = moves[moves.length-1].num
+
+    const move = {
+      prevNum,
+      action,
+      num: this.getNextNum(prevNum+action)
+    }
+    
     this.setState({
-      gameState: "waiting"
+      gameState: "waiting",
+      moves: [...moves, { ...move, mine: true}],
     }, () => {
       socket.emit("played", action)
     })
   }
 
-  componentDidUpdate(){
-    console.log(this.state)
-  }
-
   render() {
-
     const { gameState, moves } = this.state
 
     return (
-      <div>
-        <header>Play with the chance</header>
         <main>
-
           {gameState === "busy"
             ? <div>Game is busy, someone else is playing. Please wait.</div>
-            : <div>
-              <button onClick={this.startGame}>Start</button>
-              {this.actions.map(action => (
-                <button
-                  onClick={() => this.handlePlay(action)}>
-                  {action}
-                </button>)
-              )}
-            </div>
+            : <Button onClick={this.startGame}>Start</Button>
           }
-
-          <ul>
-            {moves.map((move) => (
-              <li>
-                {move.prevNum
-                  ? `${move.prevNum} + ${move.action} / 3 = ${move.num}`
-                  : `${move.num}`
-                }
-              </li>
-            ))}
-          </ul>
-
+          <MovesList list={moves} />
+          <Footer />
         </main>
-      </div>
     );
   }
 }
