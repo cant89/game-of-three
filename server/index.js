@@ -13,6 +13,7 @@ function genRandomNum() {
 }
 
 function getNextNum(num) {
+  console.log("getNextNum")
   return Math.round(num / 3)
 }
 
@@ -29,24 +30,27 @@ function resetGame(){
 }
 
 function emitWin(socket) {
+  console.log("emitWin")
   emitEnd(socket, "win")
   emitEnd(socket.broadcast, "lose")
 }
 
 function emitLose(socket) {
+  console.log("emitLose")
   emitEnd(socket, "lose")
   emitEnd(socket.broadcast, "win")
 }
 
 function emitPlay(socket, data) {
+  console.log("emitPlay", socket.id)
   socket.emit("play", data)
 }
 
 function emitEnd(socket, status){
+  console.log("emitEnd", socket.id, status)
   socket.emit("end", {status})
   console.log(game)
   resetGame()
-  removeListeners([socket, socket.broadcast])
 }
 
 function emitBusy(socket){
@@ -54,14 +58,18 @@ function emitBusy(socket){
 }
 
 function startGame(socket){
-  console.log("ready to play")
+  console.log("ready to play", socket.id)
   game.playing = true
   game.num = genRandomNum()
   emitPlay(socket, {num: game.num})
 }
 
 function onPlayed(socket, action){
-  if (!isActionValid(action, game.num)) {
+  console.log("onPlayed", socket.id)
+  if(!game.playing) 
+    return
+
+  if (!isActionValid(action, game.num)){
     emitLose(socket)
     return
   }
@@ -76,12 +84,6 @@ function onPlayed(socket, action){
     })
 }
 
-function removeListeners(sockets){
-  sockets.map(socket=>{ 
-    socket.removeAllListeners(["played"]) 
-  })
-}
-
 function userDisconnected(socket){
   emitEnd(io, 'user disconnected')
   resetGame()
@@ -89,18 +91,21 @@ function userDisconnected(socket){
 
 function addPlayer(socket) {
 
+  console.log(socket.id)
+
   if (game.playing) {
     emitBusy(socket)
     return
   }
 
   game.players++
-  socket.on("played", action=>onPlayed(socket, action))
+  console.log(socket._events)
   game.players === 2 && startGame(socket)
-  socket.once('disconnect', ()=>userDisconnected(socket))
 }
 
 io.on('connection', socket => {
   console.log('new player');
-  socket.on('start', ()=>addPlayer(socket))
+  socket.on("played", action=>onPlayed(socket, action))
+  socket.once('disconnect', ()=>userDisconnected(socket))
+  socket.on('start', ()=>addPlayer(socket))  
 });

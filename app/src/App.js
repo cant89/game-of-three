@@ -44,12 +44,11 @@ class App extends Component {
     this.setState({
       moves: [...moves, move],
       gameState: "playing"
-    }, () => {
-      console.log(this.state)
     })
   }
 
   handlePlay = (action) => {
+    console.log("handlePlay")
     this.setState({
       gameState: "waiting"
     }, () => {
@@ -64,7 +63,6 @@ class App extends Component {
   render() {
 
     const { gameState, moves } = this.state
-    console.log(this.state)
 
     return (
       <div>
