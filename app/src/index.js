@@ -2,10 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { createStore, applyMiddleware, compose } from 'redux'
 import { Provider } from 'react-redux'
+import { Normalize } from 'styled-normalize'
 import App from './App';
 import reducers from './reducers'
 import thunk from 'redux-thunk';
 import socketioMiddleware from './middlewares/socketio'
+import styled from 'styled-components';
+
+const StyledApp = styled(App)`
+  font-family: "Arial"
+`
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -29,7 +35,10 @@ const store = createStore(
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <React.Fragment>
+      <Normalize />
+      <StyledApp />
+    </React.Fragment>
   </Provider>,
   document.getElementById('root'));
 

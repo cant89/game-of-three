@@ -1,46 +1,52 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
-import StartButton from './containers/StartButton'
-import MovesList from './containers/MovesList'
-import Footer from './components/Footer'
 import { start, unsubscribeEvent } from './actions'
-
-import GameErrorPage from './pages/GameError'
-
-const resetterEndStates = ["win", "lose", "user disconnected"]
+import GameEndPage from './pages/GameEnd'
+import GameStartingPage from './pages/GameStarting'
+import GameStartPage from './pages/GameStart'
+import GamePlayingPage from './pages/GamePlaying'
 
 class App extends Component {
 
   componentDidUpdate() {
     const { game, unsubscribeEvents } = this.props
     if (resetterEndStates.indexOf(game.gameState) > -1) {
-      unsubscribeEvents(["play", "playedresult" ])
+      unsubscribeEvents(["play", "playedresult"])
     }
   }
 
   render() {
-    if (!this.props.game) {
-      return (<div>Loading...</div>)
+    const { gameState } = this.props.game
+    let result = null;
+
+    switch (gameState) {
+      case gameStates.ready:
+        result = <GameStartPage />
+        break;
+      case gameStates.busy:
+        result = <GameEndPage messageText={"Game is busy, someone else is playing. "} />
+        break;
+      case gameStates.userDisconnected:
+        result = <GameEndPage messageText={"The other player left the game."} />
+        break;
+      case gameStates.starting:
+        result = <GameStartingPage />
+        break;
+      case gameStates.win:
+        result = <GameEndPage messageText={"You won!"} />
+        break;
+      case gameStates.lose:
+        result = <GameEndPage messageText={"You lose..."} />
+        break;
+      default:
+        result = <GamePlayingPage />
     }
 
-    const { gameState, moves } = this.props.game
-
-    if (gameState === "busy") {
-      return <GameErrorPage messageText={"Game is busy, someone else is playing. "} />
-
-    } else if (gameState === "user disconnected") {
-      return <GameErrorPage messageText={"The other player left the game."} />
-
-    } else if (gameState === "starting") {
-      return <div>Waiting for other player...</div>
-
-    } else {
-      return (<div>
-        <StartButton />
-        <MovesList list={moves} />
-        <Footer />
-      </div>)
-    }
+    return (
+      <main className={this.props.className}>
+        {result}
+      </main>
+    )
   }
 }
 
@@ -61,3 +67,15 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(App);
+
+export const gameStates = {
+  ready: "ready",
+  busy: "busy",
+  starting: "starting",
+  waiting: "waiting",
+  playing: "playing",
+  win: "win",
+  lose: "lose",
+  userDisconnected: "user disconnected"
+}
+const resetterEndStates = ["win", "lose", "user disconnected"]

@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const StyledMessage = styled.div`
+const StyledMessage = styled.p`
     display: block;
-    margin: 0 auto;
     clear: both;
     margin: 20px;
     padding: 20px;
@@ -12,8 +11,8 @@ const StyledMessage = styled.div`
     color: #000;
 `
 
-const Message = ({ children })=>(
-    <StyledMessage>
+const Message = ({ className, children })=>(
+    <StyledMessage className={className}>
         {children}
     </StyledMessage>
 )

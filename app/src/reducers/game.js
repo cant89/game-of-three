@@ -1,12 +1,3 @@
-const getPreviousMove = ({ action, num, prevNum }, mine) => {
-  return {
-    prevNum,
-    action,
-    num,
-    mine
-  }
-}
-
 const game = (state = {}, action) => {
   console.log(action)
   switch (action.type) {
@@ -19,7 +10,10 @@ const game = (state = {}, action) => {
       return {
         ...state,
         moves: action.prevNum !== undefined && action.action !== undefined
-          ? [...state.moves, getPreviousMove(action, false)]
+          ? [...state.moves, {
+            ...action,
+            mine: false
+          }]
           : state.moves,
         num: action.num,
         gameState: "playing"
@@ -28,7 +22,10 @@ const game = (state = {}, action) => {
       return {
         ...state,
         moves: action.prevNum !== undefined && action.action !== undefined
-          ? [...state.moves, getPreviousMove(action, true)]
+          ? [...state.moves, {
+            ...action,
+            mine: true
+          }]
           : state.moves,
         num: action.num,
         gameState: "waiting"

@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import { start } from '../actions'
 import Button from '../components/Button'
 
-const StartButton = ({ onClick }) => (
-  <Button onClick={onClick}>Start</Button>
+const StartButton = ({ onClick, children }) => (
+  <Button onClick={onClick}>{children}</Button>
 )
 
 const mapDispatchToProps = dispatch => ({

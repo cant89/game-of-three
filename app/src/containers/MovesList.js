@@ -1,8 +1,9 @@
 import { connect } from 'react-redux'
 import MovesList from '../components/MovesList'
 
-const mapStateToProps = state => ({
-  list: state.game.moves
+const mapStateToProps = ({ game }) => ({
+  list: game.moves,
+  gameState: game.gameState
 })
 
 export default connect(

@@ -1,21 +1,36 @@
 import React from 'react';
 import styled from 'styled-components';
 import ActionButton from '../../containers/ActionButton'
+import CurrentNumber from '../../containers/CurrentNumber'
+import { gameStates } from '../../App';
+import Message from '../Message'
 
 const StyledFooter = styled.footer`
     position: fixed;
     bottom: 0;
-    padding: 0px 28px;
+    left: 0;
+    right: 0;
 `
+const Wrapper = styled.div`
+    display: flex;
+    justify-content: space-between;
+    padding: 28px;
+`
+
 const actions = [-1, 0, 1]
 
-const Footer = () => (
+const Footer = ({ gameState }) => (
   <StyledFooter>
-    {actions.map(action => (
-      <ActionButton
-        action={action}
-      />
-    ))}
+    <CurrentNumber />
+    <Wrapper>
+      {actions.map(action => (
+          <ActionButton
+            key={action}
+            action={action}
+            disabled={gameState === gameStates.waiting}
+          />
+        ))}
+    </Wrapper>
   </StyledFooter>
 )
 

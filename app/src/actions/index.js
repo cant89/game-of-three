@@ -6,8 +6,8 @@ export const subscribeEvent = ({ event, isOnce = false }) => ({
 })
 
 export const emitEvent = ({ event, data = {} }) => ({
-  emit: true,
   event,
+  emit: true,
   data
 })
 
