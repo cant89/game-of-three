@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Move = styled.div`
+const StyledMove = styled.div`
     float: ${props => props.mine ? "right" : "left"};
     clear: both;
     margin: 5px;
@@ -13,14 +13,14 @@ const Move = styled.div`
     line-height: 50px;
 `
 
-const MoveWrapper = ({ prevNum, num, action, mine })=>(
-    <Move mine={mine}>
+const Move = ({ prevNum, num, action, mine })=>(
+    <StyledMove mine={mine}>
         {mine ? "You: " : "Opponent: "}
         {prevNum !== undefined && action !== undefined
             ?`${prevNum} + ${action} / 3 = `
             : null}
         <strong>{num}</strong>
-    </Move>
+    </StyledMove>
 )
 
-export default MoveWrapper
+export default Move

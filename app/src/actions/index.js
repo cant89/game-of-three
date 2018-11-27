@@ -1,10 +1,30 @@
+const NEW_EVENT = "NEW_EVENT"
+export const subscribeEvent = ({ event, isOnce = false }) => ({
+  event,
+  handle: NEW_EVENT,
+  isOnce
+})
 
-const START_GAME = "START_GAME"
-export const startGame = ()=>{
+export const emitEvent = ({ event, data = {} }) => ({
+  emit: true,
+  event,
+  data
+})
 
+export const unsubscribeEvent = ({ event }) => ({
+  event,
+  leave: true
+})
+
+export const play = ({ event, data = {} }) => dispatch => {
+  dispatch(emitEvent({ event, data }))
 }
 
-const UPDATE_GAME_STATE = "UPDATE_GAME_STATE"
-export const updateGameState = ()=>{
-
+export const start = dispatch => {
+  dispatch(subscribeEvent({ event: "starting", isOnce: true }))
+  dispatch(subscribeEvent({ event: "busy", isOnce: true }))
+  dispatch(subscribeEvent({ event: "end", isOnce: true }))
+  dispatch(subscribeEvent({ event: "play" }))
+  dispatch(subscribeEvent({ event: "playedresult" }))
+  dispatch(emitEvent({ event: "start" }))
 }

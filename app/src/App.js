@@ -1,91 +1,63 @@
 import React, { Component } from 'react';
-import openSocket from 'socket.io-client';
-import Button from './components/Button'
-import MovesList from './components/MovesList'
+import { connect } from 'react-redux'
+import StartButton from './containers/StartButton'
+import MovesList from './containers/MovesList'
 import Footer from './components/Footer'
+import { start, unsubscribeEvent } from './actions'
 
-const socket = openSocket('http://localhost:3001');
+import GameErrorPage from './pages/GameError'
+
+const resetterEndStates = ["win", "lose", "user disconnected"]
+
 class App extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      moves: [],
-      gameState: "ready"
+
+  componentDidUpdate() {
+    const { game, unsubscribeEvents } = this.props
+    if (resetterEndStates.indexOf(game.gameState) > -1) {
+      unsubscribeEvents(["play", "playedresult" ])
     }
-  }
-
-  actions = [-1, 0, 1]
-  resetterEndStates = ["win", "lose", "user disconnected"]
-
-  componentDidMount() {
-    socket.once("busy", () => this.updateGameState({ status: "busy" }))
-  }
-
-  startGame = () => {
-    socket.on('play', this.onPlay);
-    socket.once('end', this.updateGameState)
-    socket.emit('start')
-    this.updateGameState({ status: "waiting" })
-  }
-
-  updateGameState = ({ status }) => {
-    let newState = {
-      gameState: status
-    }
-    if (this.resetterEndStates.indexOf(status) > -1){
-      newState.moves = []
-      socket.removeAllListeners('play')
-    }
-
-    this.setState(newState)
-  }
-
-  getNextNum = (num)=>{
-    return Math.round(num / 3)
-  }
-
-  onPlay = (move) => {
-    console.log("onPlay")
-    const { moves } = this.state
-    this.setState({
-      moves: [...moves, { ...move, mine: false}],
-      gameState: "playing"
-    })
-  }
-
-  handlePlay = (action) => {
-    console.log("handlePlay")
-    const { moves } = this.state
-    const prevNum = moves[moves.length-1].num
-
-    const move = {
-      prevNum,
-      action,
-      num: this.getNextNum(prevNum+action)
-    }
-    
-    this.setState({
-      gameState: "waiting",
-      moves: [...moves, { ...move, mine: true}],
-    }, () => {
-      socket.emit("played", action)
-    })
   }
 
   render() {
-    const { gameState, moves } = this.state
+    if (!this.props.game) {
+      return (<div>Loading...</div>)
+    }
 
-    return (
-        <main>
-          {gameState === "busy"
-            ? <div>Game is busy, someone else is playing. Please wait.</div>
-            : <Button onClick={this.startGame}>Start</Button>
-          }
-          <MovesList list={moves} />
-          <Footer />
-        </main>
-    );
+    const { gameState, moves } = this.props.game
+
+    if (gameState === "busy") {
+      return <GameErrorPage messageText={"Game is busy, someone else is playing. "} />
+
+    } else if (gameState === "user disconnected") {
+      return <GameErrorPage messageText={"The other player left the game."} />
+
+    } else if (gameState === "starting") {
+      return <div>Waiting for other player...</div>
+
+    } else {
+      return (<div>
+        <StartButton />
+        <MovesList list={moves} />
+        <Footer />
+      </div>)
+    }
   }
 }
 
-export default App;
+const mapDispatchToProps = dispatch => ({
+  start: () => dispatch(start),
+  unsubscribeEvents: events => {
+    events.map(event =>
+      dispatch(unsubscribeEvent({ event }))
+    )
+  }
+})
+
+const mapStateToProps = state => ({
+  game: state.game
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);

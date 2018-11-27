@@ -22,7 +22,7 @@ function isActionValid(action, num) {
   return op === Math.round(op)
 }
 
-function resetGame(){
+function resetGame() {
   game = {
     players: 0,
     playing: false
@@ -42,49 +42,66 @@ function emitLose(socket) {
 }
 
 function emitPlay(socket, data) {
-  console.log("emitPlay", socket.id)
+  console.log("emitPlay", socket.id, data)
   socket.emit("play", data)
 }
 
-function emitEnd(socket, status){
-  console.log("emitEnd", socket.id, status)
-  socket.emit("end", {status})
+function emitPlayedResult(socket, data) {
+  console.log("emitPlayedResult", socket.id, data)
+  socket.emit("playedresult", data)
+}
+
+function emitStarting(socket){
+  socket.emit("starting")
+}
+
+function emitEnd(socket, gameState) {
+  console.log("emitEnd", socket.id, gameState)
+  socket.emit("end", { gameState })
   console.log(game)
   resetGame()
 }
 
-function emitBusy(socket){
+function emitBusy(socket) {
   socket.emit("busy")
 }
 
-function startGame(socket){
+function startGame(socket) {
   console.log("ready to play", socket.id)
   game.playing = true
   game.num = genRandomNum()
-  emitPlay(socket, {num: game.num})
+  emitPlay(socket, { num: game.num })
+  emitPlayedResult(socket.broadcast, { num: game.num })
 }
 
-function onPlayed(socket, action){
+function onPlayed(socket, action) {
   console.log("onPlayed", socket.id)
-  if(!game.playing) 
+  if (!game.playing)
     return
 
-  if (!isActionValid(action, game.num)){
+  console.log(action, game.num)
+  if (!isActionValid(action, game.num)) {
     emitLose(socket)
     return
   }
+
   const prevNum = game.num
   game.num = getNextNum(game.num)
-  game.num === 1 
-    ? emitWin(socket)
-    : emitPlay(socket.broadcast, { 
-      num: game.num,
-      prevNum, 
-      action
-    })
+  if (game.num === 1) {
+    emitWin(socket)
+    return
+  }
+
+  const data = {
+    num: game.num,
+    prevNum,
+    action
+  }
+  emitPlay(socket.broadcast, data)
+  emitPlayedResult(socket, data)
 }
 
-function userDisconnected(socket){
+function userDisconnected(socket) {
   emitEnd(io, 'user disconnected')
   resetGame()
 }
@@ -98,6 +115,8 @@ function addPlayer(socket) {
     return
   }
 
+  emitStarting(socket)
+
   game.players++
   console.log(socket._events)
   game.players === 2 && startGame(socket)
@@ -105,7 +124,7 @@ function addPlayer(socket) {
 
 io.on('connection', socket => {
   console.log('new player');
-  socket.on("played", action=>onPlayed(socket, action))
-  socket.once('disconnect', ()=>userDisconnected(socket))
-  socket.on('start', ()=>addPlayer(socket))  
+  socket.on("played", ({ action }) => onPlayed(socket, action))
+  socket.once('disconnect', () => userDisconnected(socket))
+  socket.on('start', () => addPlayer(socket))
 });

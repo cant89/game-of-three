@@ -1,7 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled from 'styled-components'
 
-const Button = styled.button`
+const StyledButton = styled.button`
     margin: 5px;
     border-radius: 100%;
     width: 50px;
@@ -15,11 +15,11 @@ const Button = styled.button`
     }
 `
 
-const ActionButton = ({ action, onClick })=>(    
-    <Button
-        onClick={()=>onClick(action)}>
-        {action}
-    </Button>
+const CircularButton = ({ action, onClick }) => (
+  <StyledButton
+    onClick={() => onClick(action)}>
+    {action}
+  </StyledButton>
 )
 
-export default ActionButton
+export default CircularButton

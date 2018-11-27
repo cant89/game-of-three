@@ -1,22 +1,22 @@
 import React from 'react';
 import styled from 'styled-components';
-import ActionButton from '../ActionButton'
+import ActionButton from '../../containers/ActionButton'
 
-const Footer = styled.footer`
+const StyledFooter = styled.footer`
     position: fixed;
     bottom: 0;
     padding: 0px 28px;
 `
+const actions = [-1, 0, 1]
 
-const FooterWrapper = ({ actions })=>(
-    <Footer>
-        {actions.map(action=>(
-            <ActionButton 
-                action={action} 
-                // onClick={handlePlay} 
-            />
-        ))}
-    </Footer>
+const Footer = () => (
+  <StyledFooter>
+    {actions.map(action => (
+      <ActionButton
+        action={action}
+      />
+    ))}
+  </StyledFooter>
 )
 
-export default FooterWrapper
+export default Footer

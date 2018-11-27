@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Button = styled.button`
+const StyledButton = styled.button`
     margin: 5px;
     border-radius: 5px;
     height: 50px;
@@ -15,11 +15,11 @@ const Button = styled.button`
     }
 `
 
-const ButtonWrapper = ({ children, onClick })=>(    
-    <Button
-        onClick={onClick}>
-        {children}
-    </Button>
+const Button = ({ children, onClick }) => (
+  <StyledButton
+    onClick={onClick}>
+    {children}
+  </StyledButton>
 )
 
-export default ButtonWrapper
+export default Button
