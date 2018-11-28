@@ -6,6 +6,7 @@ import styled from 'styled-components'
 
 const StyledMessage = styled.li`
   float: left;
+  clear: both;
   list-style: none;
 `
 const StyledList = styled.ul`

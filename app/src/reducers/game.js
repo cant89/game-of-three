@@ -1,5 +1,4 @@
 const game = (state = {}, action) => {
-  console.log(action)
   switch (action.type) {
     case 'NEW_EVENT:STARTING':
       return {

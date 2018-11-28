@@ -1,21 +1,13 @@
-import React from 'react';
-import styled from 'styled-components';
+import React, { Component } from 'react';
 import MovesList from '../../containers/MovesList'
 import Footer from '../../containers/Footer'
+import AutoPlayButton from '../../containers/AutoPlayButton'
 
-const StyledWrapper = styled.section`
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-`
-
-const GameStartPage = ({ gameState }) => (
-  <React.Fragment>
-    <MovesList />
-    <Footer />
-  </React.Fragment>
+const GamePlayingPage = ()=>(
+      <React.Fragment>
+        <AutoPlayButton />
+        <MovesList />
+        <Footer />
+      </React.Fragment>
 )
-
-export default GameStartPage
+export default GamePlayingPage

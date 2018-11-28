@@ -18,7 +18,6 @@ export default function socketioMiddleware(host) {
       ...rest
     } = action;
     
-    console.log(action)
     if (!event) {
       return next(action);
     }
@@ -30,7 +29,6 @@ export default function socketioMiddleware(host) {
     if (emit) {
       return socket.emit(event, data || {})
     }
-    console.log(event, handle)
 
     let handleEvent = handle;
     if (typeof handleEvent === 'string') {
