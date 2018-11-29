@@ -11,9 +11,6 @@ const StyledButton = styled.button`
   color: #fff;
   cursor: pointer;
   box-shadow: 0px 3px 0 1px #13837a;
-  &:hover {
-      background: #00766c;
-  }
 `
 
 const Button = ({ children, onClick }) => (

@@ -10,7 +10,7 @@ const StyledMessage = styled.li`
   list-style: none;
 `
 const StyledList = styled.ul`
-  margin: 0;
+  margin: 0 0 20px;
   padding: 0;
   padding-bottom: 252px;
   overflow: auto;

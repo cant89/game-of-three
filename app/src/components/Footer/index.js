@@ -10,6 +10,8 @@ const StyledFooter = styled.footer`
     bottom: 0;
     left: 0;
     right: 0;
+    background: white;
+    box-shadow: 0 -12px 40px 20px #ffffff;
 `
 const Wrapper = styled.div`
     display: flex;

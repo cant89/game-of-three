@@ -9,7 +9,7 @@ resetGame()
 server.listen(3001, () => console.log('listening on *:3001'));
 
 function genRandomNum() {
-  return Math.floor(Math.random() * 300)
+  return Math.floor(Math.random() * 1000)
 }
 
 function getNextNum(num) {
