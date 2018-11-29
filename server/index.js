@@ -2,14 +2,17 @@ const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const uniqid = require('uniqid');
+require ('es7-object-polyfill');
 
-let game
-resetGame()
+var games = {
+  pendingRoom: null,
+  rooms: []
+};
 
 server.listen(3001, () => console.log('listening on *:3001'));
 
 function genRandomNum() {
-  return Math.floor(Math.random() * 300)
+  return Math.floor(Math.random() * 100)
 }
 
 function getNextNum(num) {
@@ -22,23 +25,16 @@ function isActionValid(action, num) {
   return op === Math.round(op)
 }
 
-function resetGame() {
-  game = {
-    players: 0,
-    playing: false
-  }
-}
-
-function emitWin(socket) {
+function emitWin(socket, roomId) {
   console.log("emitWin")
-  emitEnd(socket, "win")
-  emitEnd(socket.broadcast, "lose")
+  endGame(socket, roomId, "win")
+  endGame(socket.broadcast.to(roomId), roomId, "lose")
 }
 
-function emitLose(socket) {
+function emitLose(socket, roomId) {
   console.log("emitLose")
-  emitEnd(socket, "lose")
-  emitEnd(socket.broadcast, "win")
+  endGame(socket, roomId, "lose")
+  endGame(socket.broadcast.to(roomId), roomId, "win")
 }
 
 function emitPlay(socket, data) {
@@ -51,80 +47,76 @@ function emitPlayedResult(socket, data) {
   socket.emit("playedresult", data)
 }
 
-function emitStarting(socket){
+function emitStarting(socket) {
   socket.emit("starting")
 }
 
 function emitEnd(socket, gameState) {
   console.log("emitEnd", socket.id, gameState)
   socket.emit("end", { gameState })
-  console.log(game)
-  resetGame()
 }
 
-function emitBusy(socket) {
-  socket.emit("busy")
-}
-
-function startGame(socket) {
+function startGame(socket, roomId) {
   console.log("ready to play", socket.id)
-  game.playing = true
-  game.num = genRandomNum()
-  emitPlay(socket, { num: game.num })
-  emitPlayedResult(socket.broadcast, { num: game.num })
+  let num;
+  num = games.rooms[roomId].num = genRandomNum()
+  emitPlay(socket, { num })
+  emitPlayedResult(socket.broadcast.to(roomId), { num })
 }
 
-function onPlayed(socket, action) {
-  console.log("onPlayed", socket.id)
-  if (!game.playing)
-    return
-
-  console.log(action, game.num)
-  if (!isActionValid(action, game.num)) {
-    emitLose(socket)
+function onPlayed(socket, action, roomId) {
+  let { num } = games.rooms[roomId]
+  console.log("onPlayed", action, num)
+  if (!isActionValid(action, num)) {
+    emitLose(socket, roomId)
     return
   }
 
-  const prevNum = game.num
-  game.num = getNextNum(game.num)
-  if (game.num === 1) {
-    emitWin(socket)
+  let newNum
+  newNum = games.rooms[roomId].num = getNextNum(num)
+  if (newNum === 1) {
+    emitWin(socket, roomId)
     return
   }
 
   const data = {
-    num: game.num,
-    prevNum,
+    num: newNum,
+    prevNum : num,
     action
   }
   emitPlay(socket.broadcast, data)
   emitPlayedResult(socket, data)
 }
 
-function userDisconnected(socket) {
-  emitEnd(io, 'user disconnected')
-  resetGame()
-}
 
-function addPlayer(socket) {
-
-  console.log(socket.id)
-
-  if (game.playing) {
-    emitBusy(socket)
-    return
-  }
-
-  emitStarting(socket)
-
-  game.players++
-  console.log(socket._events)
-  game.players === 2 && startGame(socket)
+function endGame(socket, roomId, gameState){
+  console.log("endGame", roomId, gameState)
+  emitEnd(socket, gameState)
+  games.rooms[roomId] && delete games.rooms[roomId]
+  games.pendingRoom = games.pendingRoom === roomId ? null : games.pendingRoom
 }
 
 io.on('connection', socket => {
-  console.log('new player');
-  socket.on("played", ({ action }) => onPlayed(socket, action))
-  socket.once('disconnect', () => userDisconnected(socket))
-  socket.on('start', () => addPlayer(socket))
+
+  let roomId
+
+  function addPlayer(){
+    if (games.pendingRoom) {
+      roomId = games.pendingRoom
+      socket.join(roomId)
+      games.pendingRoom = null
+      startGame(socket, roomId)
+  
+    } else {
+      roomId = uniqid()
+      socket.join(roomId)
+      games.pendingRoom = roomId
+      games.rooms[roomId] = {}
+      emitStarting(socket)
+    }
+  }
+  
+  socket.on('disconnect', () => endGame(io.in(roomId), roomId, 'user disconnected'))
+  socket.on("played", ({ action }) => onPlayed(socket, action, roomId))
+  socket.on('start', addPlayer)
 });
