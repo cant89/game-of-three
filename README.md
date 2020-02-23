@@ -1,3 +1,9 @@
+# Game of three
+
+Stupid non-sense game built with:
+- Front -> React, Redux, Socket.io, Styled Components
+- Back -> NodeJS with Express.js and Socket.io
+
 ## How to run
 
 Open two terminal and type
